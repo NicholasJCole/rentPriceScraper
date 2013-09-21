@@ -26,56 +26,49 @@ html = get_html(5)
 #objects = re.findall(r'<p class="apartmentAdd"> (.*)', html)
 #print objects # or just >>>objects
 
-# get data using bs
-soup = bs(html)
-apt_divs = soup.findAll('div', {"class" : "apartmentTable"})
 
+def get_data(html):
+    # get data using bs
+    soup = bs(html)
+    apt_divs = soup.findAll('div', {"class" : "apartmentTable"})
+    # iterate through divs and extract address and price/sq feet data
+    # get divs called apartmentAdd ('p') and floorplanboxout ('div')
+    # pattern to nix html
+    p = re.compile(r'<.*?>')
+    address_divs = []
+    apt_details = []
+    #get address and apt details
+    for div in apt_divs:
+        address_divs.append(p.sub('', str(div.findAll('p', {'class' : 'apartmentAdd'}))))
+        #raw_table = div.findAll('div', {'class' : 'floorplanboxout'})
+        # extract tables
+        table = div.findAll("table")
+        # remove commas so they don't cause problems with split(',') later
+        table = re.sub(',', '', str(div.findAll("table")))
+        table = p.sub(',', str(table)).split(',')
+        #print p.sub('', str(div.findAll('p', {'class' : 'apartmentAdd'})))
+        #print table
+        apt_details.append(table)
+    # clean details
+    cleaned_details = []
+    for num in range(0, len(apt_details)):
+        temp_container = []
+        for detail in apt_details[num]:
+            if detail not in ('', '[', ']', 'Beds', 'Baths', 'Area (sq. feet)', 'Monthly Rent'):
+                temp_container.append(detail)
+        cleaned_details.append(temp_container)
+    # clean address
+    cleaned_addresses = []
+    for i in address_divs:
+        temp = re.sub(r'(-.+)', '', i)
+        temp = re.sub(r'(\n)', '', temp)
+        temp = re.sub(r'(\[ )', '', temp)
+        cleaned_addresses.append(temp)
+    for i in cleaned_details:
+        print i
+    return (cleaned_addresses, cleaned_details)
 
-# iterate through divs and extract address and price/sq feet data
-# get divs called apartmentAdd ('p') and floorplanboxout ('div')
-
-# pattern to nix html
-p = re.compile(r'<.*?>')
-
-address_divs = []
-apt_details = []
-#get address and apt details
-for div in apt_divs:
-    address_divs.append(p.sub('', str(div.findAll('p', {'class' : 'apartmentAdd'}))))
-    #raw_table = div.findAll('div', {'class' : 'floorplanboxout'})
-    # extract tables
-    table = div.findAll("table")
-    # remove commas so they don't cause problems with split(',') later
-    table = re.sub(',', '', str(div.findAll("table")))
-    table = p.sub(',', str(table)).split(',')
-    #print p.sub('', str(div.findAll('p', {'class' : 'apartmentAdd'})))
-    #print table
-    apt_details.append(table)
-
-# clean details
-cleaned_details = []
-
-for num in range(0, len(apt_details)):
-    temp_container = []
-    for detail in apt_details[num]:
-        if detail not in ('', '[', ']', 'Beds', 'Baths', 'Area (sq. feet)', 'Monthly Rent'):
-            temp_container.append(detail)
-    cleaned_details.append(temp_container)
-    
-
-
-# clean address
-
-cleaned_addresses = []
-for i in address_divs:
-    temp = re.sub(r'(-.+)', '', i)
-    temp = re.sub(r'(\n)', '', temp)
-    temp = re.sub(r'(\[ )', '', temp)
-    cleaned_addresses.append(temp)
-
-for i in cleaned_details:
-    print i
-
+get_data(html)
 # get tables
 #html_tables = []
 #soup = bs(html)
