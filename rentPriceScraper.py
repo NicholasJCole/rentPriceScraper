@@ -1,7 +1,6 @@
 # program to scrape Dallas rent prices from rentjungle
 
 import mechanize
-
 import urllib2
 import re
 from BeautifulSoup import BeautifulSoup as bs
@@ -17,17 +16,14 @@ def get_html(starting_page):
     return html
     
     
-html = get_html(5)
+
 
 
 # get address info and sq feet, rent, and bed/bath info
 
-# get this: <p class="apartmentAdd"> 2403 N Washington Ave, Dallas, TX 75204
-#objects = re.findall(r'<p class="apartmentAdd"> (.*)', html)
-#print objects # or just >>>objects
-
 
 def get_data(html):
+    # I should probably break this function up
     # get data using bs
     soup = bs(html)
     apt_divs = soup.findAll('div', {"class" : "apartmentTable"})
@@ -63,34 +59,23 @@ def get_data(html):
         temp = re.sub(r'(-.+)', '', i)
         temp = re.sub(r'(\n)', '', temp)
         temp = re.sub(r'(\[ )', '', temp)
+        temp = re.sub(r',', '', temp)
         cleaned_addresses.append(temp)
-    for i in cleaned_details:
-        print i
     return (cleaned_addresses, cleaned_details)
 
-get_data(html)
-# get tables
-#html_tables = []
-#soup = bs(html)
-#tables = soup.findAll("table")
-#for table in tables[:8]:
-#    if table.findParent("table") is None:
-#        html_tables.append(table)
+def write_csv(data):
+    with open('data_file.csv', 'wb') as csvfile:
+        datawriter = csv.writer(csvfile, delimiter = ',',)
+        for i in data:
+            datawriter.writerow(i)
+
+
+def main():
+    html = get_html(5)
+    data = get_data(html)
+    return data
     
-# scrub data
+data = main()
 
-#p = re.compile(r'<.*?>')
-#cleaned_tables = []
-#for line in p.sub(',', str(tables)).split(','):
-#    if line not in ("", "[", "]"):
-#        cleaned_tables.append(line)
-        
-#print cleaned_tables
-#print len(cleaned_tables)
-        
-
-
-
-
-
+print data
 
