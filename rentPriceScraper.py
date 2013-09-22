@@ -21,47 +21,33 @@ def get_html(starting_page):
 
 # get address info and sq feet, rent, and bed/bath info
 
-
-def get_data(html):
+# change this into a function that returns all apartmentTables
+# and then create two different functions for getting 
+# details and address
+def get_tables(html):
+    'gets apartmentTable divs from rentjungle'
     # I should probably break this function up
     # get data using bs
     soup = bs(html)
-    apt_divs = soup.findAll('div', {"class" : "apartmentTable"})
-    # iterate through divs and extract address and price/sq feet data
-    # get divs called apartmentAdd ('p') and floorplanboxout ('div')
-    # pattern to nix html
+    apt_tables = soup.findAll('div', {"class" : "apartmentTable"})
+    return apt_tables
+
+def get_zip_codes(apt_tables):
+    'takes input of apt tables and outputs zip codes'
+    # do I want to get full addresses or just zip codes?
+    # really only need zip codes
+    zip_codes = []
     p = re.compile(r'<.*?>')
-    address_divs = []
-    apt_details = []
-    #get address and apt details
-    for div in apt_divs:
-        address_divs.append(p.sub('', str(div.findAll('p', {'class' : 'apartmentAdd'}))))
-        #raw_table = div.findAll('div', {'class' : 'floorplanboxout'})
-        # extract tables
-        table = div.findAll("table")
-        # remove commas so they don't cause problems with split(',') later
-        table = re.sub(',', '', str(div.findAll("table")))
-        table = p.sub(',', str(table)).split(',')
-        #print p.sub('', str(div.findAll('p', {'class' : 'apartmentAdd'})))
-        #print table
-        apt_details.append(table)
-    # clean details
-    cleaned_details = []
-    for num in range(0, len(apt_details)):
-        temp_container = []
-        for detail in apt_details[num]:
-            if detail not in ('', '[', ']', 'Beds', 'Baths', 'Area (sq. feet)', 'Monthly Rent'):
-                temp_container.append(detail)
-        cleaned_details.append(temp_container)
-    # clean address
-    cleaned_addresses = []
-    for i in address_divs:
-        temp = re.sub(r'(-.+)', '', i)
-        temp = re.sub(r'(\n)', '', temp)
-        temp = re.sub(r'(\[ )', '', temp)
-        temp = re.sub(r',', '', temp)
-        cleaned_addresses.append(temp)
-    return (cleaned_addresses, cleaned_details)
+    for table in apt_tables:
+        zip_code = str(table.findAll('p', {'class' : 'apartmentAdd'}))
+        #re.findall(pattern, string, flags=0)
+        zip_code = re.findall(r'TX \d{5}', address)
+        zip_codes.append(zip_code)
+    return zip_codes
+    
+def get_apt_details():
+    
+    
 
 def write_csv(data):
     with open('data_file.csv', 'wb') as csvfile:
@@ -72,8 +58,9 @@ def write_csv(data):
 
 def main():
     html = get_html(5)
-    data = get_data(html)
-    return data
+    apt_tables = get_tables(html)
+    tables = get_tables(html)
+    return tables
     
 data = main()
 
