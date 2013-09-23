@@ -14,10 +14,6 @@ def get_html(starting_page):
     r = br.open(website_url)
     html = r.read()
     return html
-    
-    
-
-
 
 # get address info and sq feet, rent, and bed/bath info
 
@@ -26,8 +22,6 @@ def get_html(starting_page):
 # details and address
 def get_tables(html):
     'gets apartmentTable divs from rentjungle'
-    # I should probably break this function up
-    # get data using bs
     soup = bs(html)
     apt_tables = soup.findAll('div', {"class" : "apartmentTable"})
     return apt_tables
@@ -37,7 +31,6 @@ def get_zip_codes(apt_tables):
     # do I want to get full addresses or just zip codes?
     # really only need zip codes
     zip_codes = []
-    p = re.compile(r'<.*?>')
     for table in apt_tables:
         zip_code = str(table.findAll('p', {'class' : 'apartmentAdd'}))
         #re.findall(pattern, string, flags=0)
@@ -45,7 +38,20 @@ def get_zip_codes(apt_tables):
         zip_codes.append(zip_code)
     return zip_codes
     
-def get_apt_details():
+def get_apt_details(apt_tables):
+    'takes input of apt tables and outputs details'
+    apt_details = []
+    p = re.compile(r'<.*?>')
+    # extract data
+    # instead, go to link with full table of details, extract this
+    for table in apt_tables:
+        raw_details = table.findAll("table")
+        # get rid of commas so we can split data via commas later
+        raw_details = re.sub(r',', '', str(raw_details))
+        raw_details = p.sub(',', raw_details)
+        apt_details.append(raw_details.split(','))
+    # clean the data, get rid of non numbers
+    return apt_details
     
     
 
