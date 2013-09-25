@@ -6,8 +6,9 @@ import re
 from BeautifulSoup import BeautifulSoup as bs
 import csv
 
+#'http://www.rentjungle.com/dallas-apartments-and-houses-for-rent/page:6/cla:32.802955/clo:-96.769923/'
+
 def get_html(website_url):
-    website_url = 'http://www.rentjungle.com/dallas-apartments-and-houses-for-rent/page:6/cla:32.802955/clo:-96.769923/'
     br = mechanize.Browser()
     br.set_handle_robots(True)
     r = br.open(website_url)
@@ -84,10 +85,11 @@ def write_csv(data):
 
 
 def main():
-    html = get_html(5)
+    html = get_html('http://www.rentjungle.com/dallas-apartments-and-houses-for-rent/page:6/cla:32.802955/clo:-96.769923/')
     apt_tables = get_tables(html)
-    tables = get_tables(html)
-    return tables
+    full_details = get_apt_details(apt_tables)
+    zip_codes = get_zip_codes(apt_tables)
+    return (zip_codes, full_details)
     
 data = main()
 
