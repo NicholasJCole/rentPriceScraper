@@ -5,15 +5,20 @@ import urllib2
 import re
 from BeautifulSoup import BeautifulSoup as bs
 import csv
+import time
 
 #'http://www.rentjungle.com/dallas-apartments-and-houses-for-rent/page:6/cla:32.802955/clo:-96.769923/'
 
 def get_html(website_url):
     br = mechanize.Browser()
-    br.set_handle_robots(True)
+    br.set_handle_robots(False)
+    # add some error handling here
+    # perhaps make function retry if taking too long
+    # urllib2.URLError: <urlopen error [Errno -2] Name or service not known>
     r = br.open(website_url)
     html = r.read()
     return html
+
 
 # get address info and sq feet, rent, and bed/bath info
 
@@ -40,15 +45,17 @@ def get_zip_codes(apt_tables):
     
 def get_apt_details(apt_tables):
     'takes input of apt tables and outputs details'
-    apt_details = []
     p = re.compile(r'<.*?>')
+    full_details = []
     # extract data
     # instead, go to link with full table of details, extract this
     for table in apt_tables:
         # get link to table page
-        if re.findall(r'(/apartments/ajax_floorplans/\w*/\w*)', str(table))[0]:
-            full_details_link = 'http://www.rentjungle.com/' + re.findall(r'(/apartments/ajax_floorplans/\w*/\w*)', str(table))[0]
-            full_details = get_full_details_table(full_details_link)
+        full_details_link_base = re.findall(r'(/apartments/ajax_floorplans/\w*/\w*)', str(table))[0]
+        if full_details_link_base:
+            full_details_link = 'http://www.rentjungle.com/' + full_details_link_base
+            full_details.append(get_full_details_table(full_details_link))
+            time.sleep(1)
         else:
             full_details_link = "NA"
     # need to order the data
@@ -71,8 +78,9 @@ def get_full_details_table(full_details_link):
     # get rid of empties and brackets
     full_details_tables = []
     for detail in raw_details_tables:
-        if detail not in ('Beds', 'Baths', 'Area (sq. feet)', 'Monthly Rent', '', ' ', '[', ']'):
+        if detail not in ('Beds', 'Baths', 'Area (sq. feet)', 'Monthly Rent', '', ' ', '[', ']', '\n'):
             full_details_tables.append(detail)
+    # need to arrange details
     return full_details_tables
     
     
@@ -89,7 +97,7 @@ def main():
     apt_tables = get_tables(html)
     full_details = get_apt_details(apt_tables)
     zip_codes = get_zip_codes(apt_tables)
-    return (zip_codes, full_details)
+    return full_details
     
 data = main()
 
