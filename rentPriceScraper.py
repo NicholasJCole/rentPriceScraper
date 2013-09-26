@@ -15,8 +15,11 @@ def get_html(website_url):
     # add some error handling here
     # perhaps make function retry if taking too long
     # urllib2.URLError: <urlopen error [Errno -2] Name or service not known>
-    r = br.open(website_url)
-    html = r.read()
+    try:
+        r = br.open(website_url)
+        html = r.read()
+    except urllib2.URLError as e:
+        html = e.reason
     return html
 
 
@@ -47,6 +50,7 @@ def get_apt_details(apt_tables):
     'takes input of apt tables and outputs details'
     p = re.compile(r'<.*?>')
     full_details = []
+    structured_details = []
     # extract data
     # instead, go to link with full table of details, extract this
     for table in apt_tables:
@@ -57,8 +61,8 @@ def get_apt_details(apt_tables):
             full_details.append(get_full_details_table(full_details_link))
             time.sleep(1)
         else:
-            full_details_link = "NA"
-    # need to order the data
+            full_details.append("NA")
+    for detail_piece in full_details
     return full_details
     
     
@@ -83,7 +87,8 @@ def get_full_details_table(full_details_link):
     # need to arrange details
     return full_details_tables
     
-    
+# add a scrub data function to combine
+# both zips and details/arrange details in a logical format
 
 def write_csv(data):
     with open('data_file.csv', 'wb') as csvfile:
@@ -97,9 +102,9 @@ def main():
     apt_tables = get_tables(html)
     full_details = get_apt_details(apt_tables)
     zip_codes = get_zip_codes(apt_tables)
-    return full_details
+    return (full_details, zip_codes)
     
-data = main()
+#data = main()
 
-print data
+#print data
 
